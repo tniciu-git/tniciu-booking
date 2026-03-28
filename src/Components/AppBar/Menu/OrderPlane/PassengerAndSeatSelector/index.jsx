@@ -8,190 +8,192 @@ import {
   Paper,
   Grid,
   Divider,
+  ClickAwayListener,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import PeopleIcon from "@mui/icons-material/People";
 
 const PassengerAndSeatSelector = ({ onPassengerChange }) => {
-  const [anchorEl, setAnchorEl] = useState(null); // Popper anchor
+  const [anchorEl, setAnchorEl] = useState(null);
   const [passengerCount, setPassengerCount] = useState({
     ADULT: 1,
     CHILD: 0,
     INFANT: 0,
   });
+
+  const [seatClass, setSeatClass] = useState("ECONOMY");
+
   const seatOptions = [
     { label: "Phổ thông", value: "ECONOMY" },
     { label: "Phổ thông cao cấp", value: "PREMIUM_ECONOMY" },
     { label: "Thương gia", value: "BUSINESS" },
     { label: "Hạng nhất", value: "FIRST_CLASS" },
   ];
-  const [seatClass, setSeatClass] = useState("ECONOMY")
 
   const isOpen = Boolean(anchorEl);
 
-  const handleOpenPopper = (event) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
+  const handleToggle = (e) => {
+    setAnchorEl(anchorEl ? null : e.currentTarget);
   };
 
-  const handleClosePopper = () => {
-    setAnchorEl(null);
-  };
+  const handleClose = () => setAnchorEl(null);
 
-  const handlePassengerChange = (type, increment) => {
+  const handlePassengerChange = (type, inc) => {
     setPassengerCount((prev) => {
-      const newValue = prev[type] + (increment ? 1 : -1);
+      const newValue = prev[type] + (inc ? 1 : -1);
       const updated = {
         ...prev,
         [type]: type === "ADULT" ? Math.max(1, newValue) : Math.max(0, newValue),
       };
+
       onPassengerChange({
         passengers: updated,
         seatClass,
-      }); // Truyền dữ liệu chuẩn hóa lên component cha
+      });
+
       return updated;
     });
   };
 
-  const handleSeatClassChange = (selectedClass) => {
-    setSeatClass(selectedClass);
+  const handleSeatClassChange = (value) => {
+    setSeatClass(value);
     onPassengerChange({
       passengers: passengerCount,
-      seatClass: selectedClass,
+      seatClass: value,
     });
   };
-  const selectedSeatLabel = seatOptions.find(
-    (option) => option.value === seatClass
-  )?.label;
+
+  const total =
+    passengerCount.ADULT +
+    passengerCount.CHILD +
+    passengerCount.INFANT;
+
+  const selectedSeatLabel =
+    seatOptions.find((s) => s.value === seatClass)?.label;
+
   return (
-    <Box sx={{ position: "relative" }}>
-      {/* Button chính */}
+    <Box sx={{ width: "100%" }}>
+      {/* BUTTON */}
       <Button
         variant="outlined"
         startIcon={<PeopleIcon />}
-        onClick={handleOpenPopper}
+        onClick={handleToggle}
         fullWidth
         sx={{
-          justifyContent: "center", // Căn chữ ở giữa
-          padding: "15px 20px",
+          justifyContent: "center",
+          py: { xs: 1.5, md: 2 },
           textTransform: "none",
-          fontSize: "16px",
-          borderRadius: "6px",
-          width: "1100px",
+          fontSize: { xs: 14, md: 16 },
+          borderRadius: "8px",
           color: "black",
-          border: "1px solid rgba(0, 0, 0, 0.3)",
         }}
       >
-        {`${passengerCount.ADULT + passengerCount.CHILD + passengerCount.INFANT} Hành khách, ${selectedSeatLabel}`}
+        {`${total} Hành khách, ${selectedSeatLabel}`}
       </Button>
 
-      {/* Popper */}
+      {/* POPPER */}
       <Popper
         open={isOpen}
         anchorEl={anchorEl}
-        placement="bottom-end" // Đặt popper sang bên phải
-        modifiers={[
-          {
-            name: "offset",
-            options: {
-              offset: [10, 10], // Khoảng cách giữa button và popper
-            },
-          },
-        ]}
-        style={{ zIndex: 1300 }}
+        placement="bottom"
+        sx={{
+          zIndex: 1300,
+          width: { xs: "95vw", sm: 400, md: 600 },
+        }}
       >
-        <Paper
-          sx={{
-            position: "relative",
-            width: "600px",
-            padding: "15px",
-            boxShadow: "0px 6px 12px rgba(0, 0, 0, 1)",
-            borderRadius: "8px",
-          }}
-        >
-          {/* Mũi tên nhọn */}
-          <Box
+        <ClickAwayListener onClickAway={handleClose}>
+          <Paper
             sx={{
-              position: "absolute",
-              top: "-10px",
-              right: "20px", // Đặt mũi tên bên phải
-              width: "0",
-              height: "0",
-              borderLeft: "10px solid transparent",
-              borderRight: "10px solid transparent",
-              borderBottom: "10px solid white",
+              mt: 1,
+              p: 2,
+              borderRadius: 2,
+              boxShadow: 3,
+              width: "100%",
             }}
-          />
-          {/* Nội dung */}
-          <Box>
-            {[{ type: "ADULT", label: "Người lớn (12 tuổi trở lên)" },
-              { type: "CHILD", label: "Trẻ em (2-11 tuổi)" },
-              { type: "INFANT", label: "Trẻ sơ sinh (dưới 2 tuổi)" },
-            ].map((passenger, index) => (
-              <React.Fragment key={passenger.type}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    mb: 1,
-                  }}
-                >
-                  <Typography>{passenger.label}</Typography>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <IconButton
-                      onClick={() =>
-                        handlePassengerChange(passenger.type, false)
-                      }
-                      disabled={
-                        passenger.type === "ADULT" &&
-                        passengerCount[passenger.type] === 1
-                      }
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                    <Typography sx={{ mx: 2 }}>
-                      {passengerCount[passenger.type]}
-                    </Typography>
-                    <IconButton
-                      onClick={() =>
-                        handlePassengerChange(passenger.type, true)
-                      }
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </Box>
-                </Box>
-                <Divider sx={{ my: 1 }} />
-              </React.Fragment>
-            ))}
-          </Box>
+          >
+            {/* PASSENGERS */}
+            {[
+              { type: "ADULT", label: "Người lớn (12+)" },
+              { type: "CHILD", label: "Trẻ em (2-11)" },
+              { type: "INFANT", label: "Em bé (<2)" },
+            ].map((p) => (
+              <Box
+                key={p.type}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  py: 1,
+                }}
+              >
+                <Typography fontSize={{ xs: 13, md: 14 }}>
+                  {p.label}
+                </Typography>
 
-          {/* Loại ghế */}
-          <Grid container spacing={2}>
-            {seatOptions.map((seat) => (
-              <Grid item xs={6} key={seat.value}>
-                <Button
-                  variant={seatClass === seat.value ? "contained" : "outlined"}
-                  onClick={() => handleSeatClassChange(seat.value)}
-                  sx={{
-                    width: "100%",
-                    textTransform: "none",
-                    fontSize: "14px",
-                    padding: "10px",
-                    boxShadow:
+                <Box>
+                  <IconButton
+                    onClick={() => handlePassengerChange(p.type, false)}
+                    disabled={
+                      p.type === "ADULT" &&
+                      passengerCount[p.type] === 1
+                    }
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+
+                  <Typography component="span" mx={1}>
+                    {passengerCount[p.type]}
+                  </Typography>
+
+                  <IconButton
+                    onClick={() => handlePassengerChange(p.type, true)}
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </Box>
+              </Box>
+            ))}
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* SEAT */}
+            <Grid container spacing={1}>
+              {seatOptions.map((seat) => (
+                <Grid item xs={6} key={seat.value}>
+                  <Button
+                    fullWidth
+                    size="small"
+                    variant={
                       seatClass === seat.value
-                        ? "0px 4px 8px rgba(0, 0, 0, 0.2)"
-                        : "none",
-                  }}
-                >
-                  {seat.label}
-                </Button>
+                        ? "contained"
+                        : "outlined"
+                    }
+                    onClick={() =>
+                      handleSeatClassChange(seat.value)
+                    }
+                    sx={{
+                      textTransform: "none",
+                      fontSize: { xs: 12, md: 14 },
+                    }}
+                  >
+                    {seat.label}
+                  </Button>
                 </Grid>
-              )
-            )}
-          </Grid>
-        </Paper>
+              ))}
+            </Grid>
+
+            {/* DONE BUTTON MOBILE */}
+            <Button
+              fullWidth
+              sx={{ mt: 2, display: { xs: "block", md: "none" } }}
+              variant="contained"
+              onClick={handleClose}
+            >
+              Xong
+            </Button>
+          </Paper>
+        </ClickAwayListener>
       </Popper>
     </Box>
   );

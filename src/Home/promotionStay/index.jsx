@@ -6,7 +6,7 @@ import { Box, Typography, Card, CardMedia, CardContent } from "@mui/material";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'; // Import biểu tượng mũi tên
 
 const PromotionStay = () => {
-  const sliderRef = useRef(null); // Sử dụng ref để tham chiếu đến slider
+  const sliderRef = useRef(null); 
 
   const PromotionStays = [
     {

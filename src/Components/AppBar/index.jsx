@@ -1,8 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
-import { Button, Badge } from "@mui/material";
+import {
+  Button,
+  Badge,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import { useAuth } from "./Account";
 import Profile from "./Profile";
@@ -12,149 +21,146 @@ const AppBarComponent = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
-  // 🔥 check active (support cả detail page)
+  const [openDrawer, setOpenDrawer] = useState(false);
+
   const isActive = (path) => location.pathname.startsWith(path);
 
-  // 🎨 style menu
+  const menuItems = [
+    { label: "Máy Bay + K.sạn", path: "/account/OrderPlane" },
+    { label: "Chỗ ở", path: "/account/Hotels" },
+    { label: "Hoạt động", path: "/account/activities" },
+    { label: "Ưu đãi", path: "/account/deals" },
+    { label: "eSim", path: "/account/esim" },
+  ];
+
   const menuStyle = (path) => ({
     color: isActive(path) ? "#1976d2" : "#000",
     textTransform: "none",
-    fontSize: 16,
     fontWeight: isActive(path) ? "bold" : 500,
-    position: "relative",
-    mx: 1,
-
-    "&::after": isActive(path)
-      ? {
-          content: '""',
-          position: "absolute",
-          bottom: -6,
-          left: 0,
-          width: "100%",
-          height: "3px",
-          backgroundColor: "#1976d2",
-          borderRadius: "2px",
-        }
-      : {},
-
-    "&:hover": {
-      color: "#1976d2",
-    },
   });
 
   return (
-    <AppBar
-      position="fixed"
-      sx={{
-        backgroundColor: "#fff",
-        color: "#000",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      <Toolbar
+    <>
+      <AppBar
+        position="fixed"
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
+          backgroundColor: "#fff",
+          color: "#000",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
         }}
       >
-        {/* LEFT */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Box
-            component={Link}
-            to="/"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              mr: 2,
-            }}
-          >
-            <img
-              src="https://res.cloudinary.com/ddmsl3meg/image/upload/v1733899748/cw96zg7py4xsxwdyanzy.png"
-              style={{
-                height: "50px",
-                transition: "0.3s",
-                cursor: "pointer",
-              }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.transform = "scale(1.05)")
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.transform = "scale(1)")
-              }
-            />
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          
+          {/* LEFT */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            
+            {/* MOBILE MENU */}
+            <IconButton
+              sx={{ display: { xs: "block", md: "none" } }}
+              onClick={() => setOpenDrawer(true)}
+            >
+              <MenuIcon />
+            </IconButton>
+
+            {/* LOGO */}
+            <Box
+              component={Link}
+              to="/"
+              sx={{ display: "flex", alignItems: "center", ml: 1 }}
+            >
+              <img
+                src="https://res.cloudinary.com/ddmsl3meg/image/upload/v1733899748/cw96zg7py4xsxwdyanzy.png"
+                style={{ height: "40px" }}
+              />
+            </Box>
+
+            {/* DESKTOP MENU */}
+            <Box sx={{ display: { xs: "none", md: "flex" }, ml: 2 }}>
+              {menuItems.map((item) => (
+                <Button
+                  key={item.path}
+                  component={Link}
+                  to={item.path}
+                  sx={menuStyle(item.path)}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </Box>
           </Box>
 
-          <Button component={Link} to="/account/OrderPlane" sx={menuStyle("/account/OrderPlane")}>
-            Máy Bay + K.sạn
-          </Button>
+          {/* RIGHT */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {isAuthenticated ? (
+              <>
+                <IconButton component={Link} to="/account/shoppingcart">
+                  <Badge badgeContent={2} color="error">
+                    <ShoppingCartOutlinedIcon />
+                  </Badge>
+                </IconButton>
 
-          <Button component={Link} to="/account/Hotels" sx={menuStyle("/account/Hotels")}>
-            Chỗ ở
-          </Button>
+                <Profile />
+              </>
+            ) : (
+              <>
+                <Button
+                  component={Link}
+                  to="/account/login"
+                  sx={{ textTransform: "none" }}
+                >
+                  Đăng nhập
+                </Button>
 
-          <Button sx={menuStyle("/account/activities")}>
-            Hoạt động
-          </Button>
+                <Button
+                  component={Link}
+                  to="/account/SignUp"
+                  sx={{
+                    ml: 1,
+                    textTransform: "none",
+                    borderRadius: "20px",
+                    px: 2,
+                    background: "linear-gradient(45deg, #2196F3, #21CBF3)",
+                    color: "#fff",
+                  }}
+                >
+                  Đăng ký
+                </Button>
+              </>
+            )}
+          </Box>
+        </Toolbar>
+      </AppBar>
 
-          <Button sx={menuStyle("/account/deals")}>
-            Ưu đãi
-          </Button>
-
-          <Button sx={menuStyle("/account/esim")}>
-            eSim
-          </Button>
-        </Box>
-
-        {/* RIGHT */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          {isAuthenticated ? (
-            <>
-              <Button component={Link} to="/account/shoppingcart">
-                <Badge badgeContent={2} color="error">
-                  <ShoppingCartOutlinedIcon />
-                </Badge>
-              </Button>
-
-              <Profile fontSize="30px" />
-            </>
-          ) : (
-            <>
-              <Button
+      {/* DRAWER MOBILE */}
+      <Drawer
+        anchor="left"
+        open={openDrawer}
+        onClose={() => setOpenDrawer(false)}
+      >
+        <Box sx={{ width: 250 }}>
+          <List>
+            {menuItems.map((item) => (
+              <ListItem
+                button
+                key={item.path}
                 component={Link}
-                to="/account/login"
-                sx={{
-                  color: "#000",
-                  textTransform: "none",
-                  fontSize: 16,
-                }}
+                to={item.path}
+                onClick={() => setOpenDrawer(false)}
               >
-                Đăng Nhập
-              </Button>
-
-              <Button
-                component={Link}
-                to="/account/SignUp"
-                sx={{
-                  ml: 1,
-                  textTransform: "none",
-                  fontSize: 16,
-                  borderRadius: "20px",
-                  px: 2,
-                  background: "linear-gradient(45deg, #2196F3, #21CBF3)",
-                  color: "#fff",
-                  "&:hover": {
-                    background: "linear-gradient(45deg, #1976d2, #00acc1)",
-                  },
-                }}
-              >
-                Đăng Ký
-              </Button>
-            </>
-          )}
+                <ListItemText
+                  primary={item.label}
+                  sx={{
+                    color: isActive(item.path)
+                      ? "#1976d2"
+                      : "#000",
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
         </Box>
-      </Toolbar>
-    </AppBar>
+      </Drawer>
+    </>
   );
 };
 
