@@ -17,7 +17,7 @@ public class FlightService {
     public FlightService(FlightRepository flightRepository) {
         this.flightRepository = flightRepository;
     }
-
+    //Tao chuyen bay cua Aviationstack
     // Tạo chuyến bay
     public Flight createFlight(Flight flight) {
         return flightRepository.save(flight);
